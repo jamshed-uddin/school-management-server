@@ -60,9 +60,8 @@ const getSchools = async (req, res, next) => {
   try {
     const db = req.app.locals.db;
     const { latitude, longitude } = req.query;
-    const limit = req.query.limit || 15;
-    const offset = req.query.skip || 0;
-    const page = req.query.page || 1;
+    const limit = +req.query.limit || 15;
+    const page = +req.query.page || 1;
 
     const schema = joi.object({
       latitude: joi.number().required().messages({
@@ -87,6 +86,8 @@ const getSchools = async (req, res, next) => {
     `);
 
     const totalPages = Math.ceil(totalSchools[0][0].total / limit);
+
+    const offset = (page - 1) * limit;
 
     const schools = await db.query(
       `
