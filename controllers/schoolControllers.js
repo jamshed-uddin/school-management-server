@@ -8,7 +8,6 @@ const addSchool = async (req, res, next) => {
   try {
     const { name, address, latitude, longitude } = req.body;
     const db = req.app.locals.db;
-    console.log("body", req.body);
 
     const schema = joi.object({
       name: joi.string().required().messages({
@@ -32,11 +31,9 @@ const addSchool = async (req, res, next) => {
     const { error, value } = schema.validate(req.body);
 
     if (error) {
-      console.log(error);
       return res.status(400).send({ message: error.message });
     }
 
-    console.log(value);
     await db.query(
       `
           INSERT INTO schools (name, address, latitude, longitude)
@@ -48,7 +45,6 @@ const addSchool = async (req, res, next) => {
       message: "School added successfully",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send("Server error");
   }
 };
@@ -77,7 +73,6 @@ const getSchools = async (req, res, next) => {
     const { error, value } = schema.validate({ latitude, longitude });
 
     if (error) {
-      console.log(error.message);
       return res.status(400).send({ message: error.message });
     }
 
@@ -110,7 +105,6 @@ const getSchools = async (req, res, next) => {
 
     res.status(200).json(response);
   } catch (error) {
-    console.log(error);
     res.status(500).send("Server error");
   }
 };
