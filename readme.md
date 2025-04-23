@@ -32,7 +32,7 @@ node index.js
 
 ### Endpoint documentation(postman)
 
-[]()
+[https://documenter.getpostman.com/view/29126982/2sB2ixitZM](https://documenter.getpostman.com/view/29126982/2sB2ixitZM)
 
 ### 1. Add school
 
@@ -104,4 +104,13 @@ limit(optional)
     "totalPages": 1
   }
 }
+```
+
+## Dependencies
+
+```
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "joi": "^17.13.3",
+    "mysql2": "^3.14.0"
 ```
