@@ -1,3 +1,5 @@
+const joi = require("joi");
+
 // @desc: Get all schools
 // POST /api/schools
 // @access: Public
@@ -5,21 +7,45 @@
 const addSchool = async (req, res, next) => {
   try {
     const { name, address, latitude, longitude } = req.body;
-    if (!name || !address || !latitude || !longitude) {
-      return res
-        .status(400)
-        .send({ message: "Please fill all the required fields" });
+    const db = req.app.locals.db;
+    console.log("body", req.body);
+
+    const schema = joi.object({
+      name: joi.string().required().messages({
+        "any.required": "Name is required",
+        "string.base": "Name must be a string",
+      }),
+      address: joi.string().required().messages({
+        "any.required": "Address is required",
+        "string.base": "Address must be a string",
+      }),
+      latitude: joi.number().required().messages({
+        "number.empty": "Latitude is required",
+        "number.base": "Latitude must be a number",
+      }),
+      longitude: joi.number().required().messages({
+        "number.empty": "Longitude is required",
+        "number.base": "Longitude must be a number",
+      }),
+    });
+
+    const { error, value } = schema.validate(req.body);
+
+    if (error) {
+      console.log(error);
+      return res.status(400).send({ message: error.message });
     }
-    const addedSchool = await db.query(
+
+    console.log(value);
+    await db.query(
       `
-      INSERT INTO schools (name, address, latitude, longitude)
-   VALUES (?, ?, ?, ?)    `,
+          INSERT INTO schools (name, address, latitude, longitude)
+       VALUES (?, ?, ?, ?)   `,
       [name, address, latitude, longitude]
     );
 
-    res.status(200).json({
+    res.status(201).json({
       message: "School added successfully",
-      data: addedSchool[0],
     });
   } catch (error) {
     console.log(error);
@@ -32,10 +58,29 @@ const addSchool = async (req, res, next) => {
 // @access: Public
 const getSchools = async (req, res, next) => {
   try {
+    const db = req.app.locals.db;
     const { latitude, longitude } = req.query;
-    const limit = req.query.limit || 10;
+    const limit = req.query.limit || 15;
     const offset = req.query.skip || 0;
     const page = req.query.page || 1;
+
+    const schema = joi.object({
+      latitude: joi.number().required().messages({
+        "any.required": "User latitude is required",
+        "number.base": "Latitude must be a number",
+      }),
+      longitude: joi.number().required().messages({
+        "any.required": "User longitude is required",
+        "number.base": "Longitude must be a number",
+      }),
+    });
+
+    const { error, value } = schema.validate({ latitude, longitude });
+
+    if (error) {
+      console.log(error.message);
+      return res.status(400).send({ message: error.message });
+    }
 
     const totalSchools = await db.query(`
     SELECT COUNT(*) as total FROM schools
@@ -45,8 +90,11 @@ const getSchools = async (req, res, next) => {
 
     const schools = await db.query(
       `
-              SELECT id, name, address, latitude, longitude FROM schools LIMIT ? OFFSET ?`,
-      [limit, offset]
+              SELECT id, name, address, latitude, longitude
+              FROM schools
+              ORDER BY POW(latitude-?,2)+ POW(longitude-?, 2) ASC
+              LIMIT ? OFFSET ?`,
+      [value.latitude, value.longitude, limit, offset]
     );
 
     const response = {
