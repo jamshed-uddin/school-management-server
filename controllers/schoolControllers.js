@@ -19,11 +19,11 @@ const addSchool = async (req, res, next) => {
         "string.base": "Address must be a string",
       }),
       latitude: joi.number().required().messages({
-        "number.empty": "Latitude is required",
+        "any.required": "Latitude is required",
         "number.base": "Latitude must be a number",
       }),
       longitude: joi.number().required().messages({
-        "number.empty": "Longitude is required",
+        "any.required": "Longitude is required",
         "number.base": "Longitude must be a number",
       }),
     });
